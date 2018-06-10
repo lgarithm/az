@@ -7,5 +7,6 @@ main:
 	rm -fr $(GOPATH)/src/$(PKG) && ln -s $(shell pwd) $(GOPATH)/src/$(PKG)
 	rm -fr $(GOPATH)/bin && ln -s $(shell pwd)/bin $(GOPATH)/bin
 
-	GOPATH=$(GOPATH) \
-		go install -v $(PKG)/cmd/example-1
+	GOPATH=$(GOPATH) go install -v \
+		$(PKG)/cmd/example-0 \
+		$(PKG)/cmd/example-1
