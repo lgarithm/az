@@ -94,12 +94,11 @@ func (d Deployment) Deploy() (*resources.DeploymentExtended, error) {
 	glog.Infof("Deploying %s to %s in %s", d.Name, d.Group, d.Location)
 	client := d.clientFactory.NewDepClient()
 	client.PollingDelay = 30 * time.Second
-	resch, err := client.CreateOrUpdate(context.TODO(), d.Group, d.Name, d.template.ToDeployment())
-	ok, err := resch.Done(client)
-	if !ok || err != nil {
+	promise, err := client.CreateOrUpdate(context.TODO(), d.Group, d.Name, d.template.ToDeployment())
+	if err := promise.WaitForCompletionRef(context.TODO(), client.Client); err != nil {
 		return nil, errors.Wrap(err, "CreateOrUpdate failed")
 	}
-	res, err := resch.Result(*client)
+	res, err := promise.Result(*client)
 	if err != nil {
 		return nil, errors.Wrap(err, "CreateOrUpdate failed")
 	}

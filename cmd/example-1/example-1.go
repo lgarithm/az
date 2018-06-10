@@ -3,17 +3,21 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"os"
 
 	"github.com/golang/glog"
 	"github.com/lgarithm/az/cmd/example-1/app"
 	"github.com/lgarithm/az/dep"
+	"github.com/lgarithm/go/control"
+	"github.com/lgarithm/go/profile"
 )
 
 var (
 	group    = flag.String("group", "test-01", "azure resource group")
 	location = flag.String("location", "southeastasia", "azure location")
+	action   = flag.String("action", "", "up | down | reload")
 )
 
 func main() {
@@ -27,8 +31,23 @@ func main() {
 		glog.Exit(err)
 	}
 	withFile("template.json", func(f io.Writer) error { return d.SaveTemplate(f) })
-	d.Down()
-	d.Up()
+	if err := run(d); err != nil {
+		glog.Exit(err)
+	}
+}
+
+func run(d *dep.Deployment) error {
+	defer profile.Profile("main::run").Done()
+	switch *action {
+	case "up":
+		return d.Up()
+	case "down":
+		return d.Down()
+	case "reload":
+		return control.Chain(d.Down, d.Up)()
+	default:
+		return fmt.Errorf("invalid action: %s", *action)
+	}
 }
 
 func saveJSON(i interface{}, w io.Writer) {
