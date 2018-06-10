@@ -38,7 +38,7 @@ var (
 	defaultUbuntuImage = &compute.ImageReference{
 		Publisher: to.StringPtr("Canonical"),
 		Offer:     to.StringPtr("UbuntuServer"),
-		Sku:       to.StringPtr("17.04"),
+		Sku:       to.StringPtr("18.04-LTS"),
 		Version:   to.StringPtr("latest"),
 	}
 	defaultWindowsImage = &compute.ImageReference{

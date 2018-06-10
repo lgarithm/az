@@ -1,97 +1,46 @@
 package tpl
 
 import (
+	"encoding/json"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
-	disk "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage"
 )
 
-const (
-	defaultSNet = "snet01"
-
-	TypeSA    = `Microsoft.Storage/storageAccounts`
-	TypeMD    = `Microsoft.Compute/disks`
-	TypeVM    = `Microsoft.Compute/virtualMachines`
-	TypeVMExt = `Microsoft.Compute/virtualMachines/extensions`
-	TypeVN    = `Microsoft.Network/virtualNetworks`
-	TypeSG    = `Microsoft.Network/networkSecurityGroups`
-	TypeIP    = `Microsoft.Network/publicIPAddresses`
-	TypeNI    = `Microsoft.Network/networkInterfaces`
-)
-
-type Parameter struct {
-	DefaultValue string `json:"defaultValue"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
+type Item struct {
+	Header Header
+	Body   interface{}
 }
 
-type Header struct {
-	APIVersion string   `json:"apiVersion"`
-	DependsOn  []string `json:"dependsOn"`
+func toJSON(i interface{}) map[string]interface{} {
+	bs, err := json.Marshal(i)
+	if err != nil {
+		return nil
+	}
+	objectMap := make(map[string]interface{})
+	if err := json.Unmarshal(bs, &objectMap); err != nil {
+		return nil
+	}
+	return objectMap
 }
 
-type GenericResource struct {
-	Header
-	Name     string `json:"name"`
-	Type     string `json:"type"`
-	Location string `json:"location"`
-}
-
-func (g *GenericResource) RefExpr() string {
-	return fmt.Sprintf("[resourceId('%s', '%s')]", g.Type, g.Name)
-}
-
-type StorageAccountResource struct {
-	Header
-	storage.Account
-}
-
-type ManagedDiskResource struct {
-	Header
-	disk.Disk
-}
-
-type VirtualNetworkResource struct {
-	Header
-	network.VirtualNetwork
-}
-
-type NetworkSecurityGroupResource struct {
-	Header
-	network.SecurityGroup
-}
-
-type PublicIPResource struct {
-	Header
-	network.PublicIPAddress
-}
-
-type NetworkInterfaceResource struct {
-	Header
-	network.Interface
-}
-
-type VirtualMachineResource struct {
-	Header
-	compute.VirtualMachine
-}
-
-type VirtualMachineExtensionResource struct {
-	Header
-	compute.VirtualMachineExtension
+func (i Item) MarshalJSON() ([]byte, error) {
+	head := toJSON(i.Header)
+	body := toJSON(i.Body)
+	objectMap := make(map[string]interface{})
+	for k, v := range body {
+		objectMap[k] = v
+	}
+	for k, v := range head {
+		objectMap[k] = v
+	}
+	return json.Marshal(objectMap)
 }
 
 type Builder struct {
-	resources []interface{}
-	ni2ip     map[string]string
-	vm2ni     map[string]string
-}
-
-func (h *Header) addDep(ref string) {
-	h.DependsOn = append(h.DependsOn, ref)
+	items []Item
+	ni2ip map[string]string
+	vm2ni map[string]string
 }
 
 func NewBuilder() *Builder {
@@ -106,12 +55,12 @@ func (b *Builder) Build() DeploymentTemplate {
 		"$schema":        "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
 		"contentVersion": "1.0.0.0",
 		"parameters":     &map[string]Parameter{},
-		"resources":      &b.resources,
+		"resources":      &b.items,
 	}
 }
 
-func (b *Builder) add(r interface{}) {
-	b.resources = append(b.resources, r)
+func (b *Builder) add(h Header, r interface{}) {
+	b.items = append(b.items, Item{h, r})
 }
 
 func (b *Builder) header(apiVersion string) Header {
@@ -121,10 +70,9 @@ func (b *Builder) header(apiVersion string) Header {
 // AddVN adds a Virtual Network to the template builder.
 func (b *Builder) AddVN() VirtualNetworkResource {
 	r := VirtualNetworkResource{
-		b.header(APIVersions.VirtualNetwork),
 		newVN("default"),
 	}
-	b.add(r)
+	b.add(b.header(APIVersions.VirtualNetwork), r)
 	return r
 }
 
@@ -135,20 +83,18 @@ func (b *Builder) AddNSG(rules ...network.SecurityRule) NetworkSecurityGroupReso
 		p = &rules
 	}
 	r := NetworkSecurityGroupResource{
-		b.header(APIVersions.NetworkSecurityGroup),
 		newNSG("default", p),
 	}
-	b.add(r)
+	b.add(b.header(APIVersions.NetworkSecurityGroup), r)
 	return r
 }
 
 // AddIP adds a Public IP Address to the template builder.
 func (b *Builder) AddIP(name string) PublicIPResource {
 	r := PublicIPResource{
-		b.header(APIVersions.PublicIPAddress),
 		newIP(name),
 	}
-	b.add(r)
+	b.add(b.header(APIVersions.PublicIPAddress), r)
 	return r
 }
 
@@ -163,10 +109,9 @@ func (b *Builder) AddNI(name string, vn VirtualNetworkResource, nsg *NetworkSecu
 		h.addDep(fmt.Sprintf("[resourceId('%s', '%s')]", *ip.Type, *ip.Name))
 	}
 	r := NetworkInterfaceResource{
-		h,
 		newNI(name, vn, nsg, ip),
 	}
-	b.add(r)
+	b.add(h, r)
 	if ip != nil {
 		b.ni2ip[name] = *ip.Name
 	}
@@ -178,10 +123,9 @@ func (b *Builder) AddVM(name string, ni NetworkInterfaceResource, opts *VMOption
 	h := b.header(APIVersions.Default)
 	h.addDep(fmt.Sprintf("[resourceId('%s', '%s')]", *ni.Type, *ni.Name))
 	r := VirtualMachineResource{
-		h,
 		newVM(name, ni, opts),
 	}
-	b.add(r)
+	b.add(h, r)
 	b.vm2ni[name] = *ni.Name
 	return r
 }
@@ -191,10 +135,9 @@ func (b *Builder) AddVMExt(name string, vm VirtualMachineResource) VirtualMachin
 	h := b.header(APIVersions.Default)
 	h.addDep(fmt.Sprintf("[resourceId('%s', '%s')]", *vm.Type, *vm.Name))
 	r := VirtualMachineExtensionResource{
-		h,
 		newVMExt(name, vm),
 	}
-	b.add(r)
+	b.add(h, r)
 	return r
 }
 
@@ -203,10 +146,9 @@ func (b *Builder) AddDockerVMExt(name string, vm VirtualMachineResource) Virtual
 	h := b.header(APIVersions.Default)
 	h.addDep(fmt.Sprintf("[resourceId('%s', '%s')]", *vm.Type, *vm.Name))
 	r := VirtualMachineExtensionResource{
-		h,
 		newDockerVMExt(name, vm),
 	}
-	b.add(r)
+	b.add(h, r)
 	return r
 }
 
@@ -215,10 +157,9 @@ func (b *Builder) AddWindowsVM(name string, ni NetworkInterfaceResource) Virtual
 	h := b.header(APIVersions.Default)
 	h.addDep(fmt.Sprintf("[resourceId('%s', '%s')]", *ni.Type, *ni.Name))
 	r := VirtualMachineResource{
-		h,
 		newWindowsVM(name, ni),
 	}
-	b.add(r)
+	b.add(h, r)
 	return r
 }
 
