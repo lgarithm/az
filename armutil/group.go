@@ -2,11 +2,9 @@ package armutil
 
 import (
 	"context"
-	"net/http"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
-	"github.com/golang/glog"
 
 	"github.com/lgarithm/az/arm"
 	"github.com/lgarithm/az/cloud/watcher"
@@ -15,7 +13,7 @@ import (
 // EnsureGroup creates a resource group if not exists
 func EnsureGroup(cf *arm.ClientFactory, name, location string) error {
 	client := cf.NewGroupsClient()
-	_, err := client.CreateOrUpdate(name, resources.Group{Location: &location})
+	_, err := client.CreateOrUpdate(context.TODO(), name, resources.Group{Location: &location})
 	return err
 }
 
@@ -34,19 +32,23 @@ func TearDownGroup(cf *arm.ClientFactory, name string) error {
 
 func teardownGroup(cf *arm.ClientFactory, name string) error {
 	client := cf.NewGroupsClient()
-	resch, errch := client.Delete(name, nil)
-	err := <-errch
-	res := <-resch
+	resch, err := client.Delete(context.TODO(), name)
 	if err != nil {
-		// FIXME
-		if res.Response == nil {
-			glog.Error("res.Response is null")
-			return err
-		}
-		if res.StatusCode == http.StatusNotFound {
-			return nil
-		}
 		return err
 	}
+	resch.Done(client)
+	_, err = resch.GetResult(client)
+	return err
+	// if err != nil {
+	// 	// FIXME
+	// 	if res.Response == nil {
+	// 		glog.Error("res.Response is null")
+	// 		return err
+	// 	}
+	// 	if res.StatusCode == http.StatusNotFound {
+	// 		return nil
+	// 	}
+	// 	return err
+	// }
 	return nil
 }

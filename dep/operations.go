@@ -72,7 +72,7 @@ func (d Deployment) Validate() error {
 	client := d.clientFactory.NewDepClient()
 	client.PollingDelay = 10 * time.Second
 	client.PollingDuration = 1 * time.Minute
-	res, err := client.Validate(d.Group, d.Name, d.template.ToDeployment())
+	res, err := client.Validate(context.TODO(), d.Group, d.Name, d.template.ToDeployment())
 	if err != nil {
 		return err
 	}
@@ -94,9 +94,12 @@ func (d Deployment) Deploy() (*resources.DeploymentExtended, error) {
 	glog.Infof("Deploying %s to %s in %s", d.Name, d.Group, d.Location)
 	client := d.clientFactory.NewDepClient()
 	client.PollingDelay = 30 * time.Second
-	resch, errch := client.CreateOrUpdate(d.Group, d.Name, d.template.ToDeployment(), nil)
-	err := <-errch
-	res := <-resch
+	resch, err := client.CreateOrUpdate(context.TODO(), d.Group, d.Name, d.template.ToDeployment())
+	ok, err := resch.Done(client)
+	if !ok || err != nil {
+		return nil, errors.Wrap(err, "CreateOrUpdate failed")
+	}
+	res, err := resch.Result(*client)
 	if err != nil {
 		return nil, errors.Wrap(err, "CreateOrUpdate failed")
 	}

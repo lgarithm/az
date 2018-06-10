@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -26,7 +25,7 @@ type GroupWatcher struct {
 	vmClient *compute.VirtualMachinesClient
 	niClient *network.InterfacesClient
 	ipClient *network.PublicIPAddressesClient
-	gsClient *resources.GroupsClient
+	gsClient *resources.Client
 }
 
 func setDefaultPolling(client *autorest.Client) {
@@ -40,10 +39,11 @@ func NewGroupWatcher(group string) GroupWatcher {
 	if err != nil {
 		glog.Exit(err)
 	}
+
 	vmClient := cf.NewVMClient()
 	ipClient := cf.NewIPClient()
 	niClient := cf.NewNIClient()
-	gsClient := cf.NewGroupsClient()
+	gsClient := cf.NewResourceClient()
 	// setDefaultPolling(&vmClient.ManagementClient.Client)
 	// setDefaultPolling(&ipClient.ManagementClient.Client)
 	// setDefaultPolling(&niClient.ManagementClient.Client)
@@ -81,15 +81,15 @@ func (w GroupWatcher) WaitSSH(ctx context.Context, vmNames []string) error {
 func (w GroupWatcher) WaitDown(ctx context.Context) error {
 	defer profile.Profile("WaitDown").Done()
 	return control.Wait(ctx, 15*time.Second, func() error {
-		res, err := w.gsClient.ListResources(context.TODO(), w.Group, "", "", nil)
+		res, err := w.gsClient.ListByResourceGroup(context.TODO(), w.Group, "", "", nil)
 		if err != nil {
-			if httpRes := res.Response.Response; httpRes != nil && httpRes.StatusCode == http.StatusNotFound {
-				return nil
-			}
+			// if httpRes := res.Response.Response; httpRes != nil && httpRes.StatusCode == http.StatusNotFound {
+			// 	return nil
+			// }
 			return err
 		}
 		var waits []string
-		for _, r := range *res.Value {
+		for _, r := range res.Values() {
 			waits = append(waits, *r.Name)
 		}
 		if len(waits) > 0 {

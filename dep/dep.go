@@ -1,6 +1,7 @@
 package dep
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -95,12 +96,12 @@ func (d Deployment) VMNames() []string {
 
 // GetIPMap returns (VM Name -> IP, VM Names without IP, error)
 func (d Deployment) GetIPMap() (map[string]string, []string, error) {
-	res, err := d.clientFactory.NewIPClient().List(d.Group)
+	res, err := d.clientFactory.NewIPClient().List(context.TODO(), d.Group)
 	if err != nil {
 		return nil, nil, err
 	}
 	ipNameToIPAddress := map[string]string{}
-	for _, ip := range *res.Value {
+	for _, ip := range res.Values() {
 		ipNameToIPAddress[*ip.Name] = *ip.IPAddress
 	}
 	vmNameToIPAddress := map[string]string{}

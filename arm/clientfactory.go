@@ -120,6 +120,13 @@ func (cf *ClientFactory) NewCRClient() *containerregistry.RegistriesClient {
 	return &client
 }
 
+// NewResourceClient creates an azure resources.Client
+func (cf *ClientFactory) NewResourceClient() *resources.Client {
+	client := resources.NewClientWithBaseURI(baseURI, cf.env.SubscriptionID)
+	client.Authorizer = cf.authorizer
+	return &client
+}
+
 func (cf *ClientFactory) Info() {
 	e := json.NewEncoder(os.Stdout)
 	e.SetIndent("", "    ")
