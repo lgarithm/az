@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-04-01/network"
 	"github.com/golang/glog"
-	"github.com/lgarithm/az/cloud/azure"
 	"github.com/lgarithm/az/cloud/cloudinit"
 	"github.com/lgarithm/go/control"
 	"github.com/lgarithm/go/net/ssh"
@@ -37,7 +36,7 @@ func (w VMWatcher) GetVMPublicIPs() ([]string, error) {
 	}
 	var ipAddresses []string
 	for _, niRef := range *vm.NetworkProfile.NetworkInterfaces {
-		ni, err := w.niClient.Get(context.TODO(), w.Group, azure.ID2Name(*niRef.ID), "")
+		ni, err := w.niClient.Get(context.TODO(), w.Group, ID2Name(*niRef.ID), "")
 		if err != nil {
 			glog.Warning(err)
 			continue
@@ -47,7 +46,7 @@ func (w VMWatcher) GetVMPublicIPs() ([]string, error) {
 				continue
 			}
 			pubIP := *ipCfg.PublicIPAddress
-			ip, err := w.ipClient.Get(context.TODO(), w.Group, azure.ID2Name(*pubIP.ID), "")
+			ip, err := w.ipClient.Get(context.TODO(), w.Group, ID2Name(*pubIP.ID), "")
 			if err != nil {
 				glog.Warning(err)
 				continue
