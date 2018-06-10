@@ -44,9 +44,9 @@ func NewGroupWatcher(group string) GroupWatcher {
 	ipClient := cf.NewIPClient()
 	niClient := cf.NewNIClient()
 	gsClient := cf.NewResourceClient()
-	// setDefaultPolling(&vmClient.ManagementClient.Client)
-	// setDefaultPolling(&ipClient.ManagementClient.Client)
-	// setDefaultPolling(&niClient.ManagementClient.Client)
+	setDefaultPolling(&vmClient.Client)
+	setDefaultPolling(&ipClient.Client)
+	setDefaultPolling(&niClient.Client)
 	return GroupWatcher{
 		Group:    group,
 		vmClient: vmClient,
