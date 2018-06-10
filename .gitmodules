@@ -1,0 +1,15 @@
+[submodule "vendor/github.com/golang/glog"]
+	path = vendor/github.com/golang/glog
+	url = https://github.com/golang/glog.git
+[submodule "vendor/github.com/Azure/azure-sdk-for-go"]
+	path = vendor/github.com/Azure/azure-sdk-for-go
+	url = https://github.com/Azure/azure-sdk-for-go.git
+[submodule "vendor/github.com/Azure/go-autorest"]
+	path = vendor/github.com/Azure/go-autorest
+	url = https://github.com/Azure/go-autorest.git
+[submodule "vendor/github.com/dgrijalva/jwt-go"]
+	path = vendor/github.com/dgrijalva/jwt-go
+	url = https://github.com/dgrijalva/jwt-go.git
+[submodule "vendor/github.com/satori/uuid"]
+	path = vendor/github.com/satori/uuid
+	url = https://github.com/satori/uuid.git
