@@ -27,6 +27,7 @@ func main() {
 		glog.Exit(err)
 	}
 	withFile("template.json", func(f io.Writer) error { return d.SaveTemplate(f) })
+	d.Down()
 	d.Up()
 }
 

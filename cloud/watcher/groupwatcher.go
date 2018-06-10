@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-04-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/golang/glog"

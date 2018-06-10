@@ -155,7 +155,7 @@ func newStorageProfileFromImage(name string, image *compute.ImageReference) *com
 			// ManagedDisk: &compute.ManagedDiskParameters{
 			// 	StorageAccountType: compute.StandardLRS,
 			// },
-			// CreateOption: compute.FromImage,
+			CreateOption: compute.DiskCreateOptionTypesFromImage,
 		},
 		DataDisks: &[]compute.DataDisk{},
 	}

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-04-01/network"
 	"github.com/golang/glog"
 	"github.com/lgarithm/az/cloud/azure"
 	"github.com/lgarithm/az/cloud/cloudinit"
