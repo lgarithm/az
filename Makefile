@@ -9,8 +9,8 @@ main:
 
 	GOPATH=$(GOPATH) go install -v \
 		$(PKG)/cmd/example-0 \
-		$(PKG)/cmd/example-1
-
+		$(PKG)/cmd/example-1 \
+		$(PKG)/cmd/ml-cluster
 
 clean:
 	go clean -cache

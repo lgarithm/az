@@ -101,10 +101,13 @@ func (w GroupWatcher) WaitDown(ctx context.Context) error {
 }
 
 // NewVMWatcher creates a VMWatcher with given VM name
-func (w GroupWatcher) NewVMWatcher(name string) VMWatcher {
-	return VMWatcher{
-		Group:    w.Group,
-		Name:     name,
+func (w GroupWatcher) NewVMWatcher(name string) *VMWatcher {
+	return &VMWatcher{
+		Group:      w.Group,
+		Name:       name,
+		SSHTimeout: 6 * time.Second,
+		User:       `cup`,
+
 		vmClient: w.vmClient,
 		niClient: w.niClient,
 		ipClient: w.ipClient,

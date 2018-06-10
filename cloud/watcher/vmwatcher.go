@@ -20,8 +20,11 @@ import (
 
 // VMWatcher watches a VM
 type VMWatcher struct {
-	Group    string
-	Name     string
+	Group      string
+	Name       string
+	SSHTimeout time.Duration
+	User       string
+
 	vmClient *compute.VirtualMachinesClient
 	niClient *network.InterfacesClient
 	ipClient *network.PublicIPAddressesClient
@@ -80,7 +83,7 @@ func (w VMWatcher) watchSSH() error {
 		log.Print(err)
 		return err
 	}
-	err = sshTest(ips[0])
+	err = w.sshTest(ips[0])
 	if err == nil {
 		log.Printf("%s can be ssh into", w.Name)
 	} else {
@@ -135,7 +138,7 @@ func (w VMWatcher) watchCloudInit(ctx context.Context, ip string) (error, error)
 	ctx, cancal := context.WithTimeout(ctx, timeout)
 	defer cancal()
 	const cmd = `tail /var/log/cloud-init.log`
-	stdout, _, err := ssh.RunWith(ctx, defaultUser, ip, cmd)
+	stdout, _, err := ssh.RunWith(ctx, w.User, ip, cmd)
 	if err != nil {
 		return err, nil
 	}
@@ -153,13 +156,10 @@ func (w VMWatcher) watchCloudInit(ctx context.Context, ip string) (error, error)
 	return nil, nil
 }
 
-const defaultUser = "cup"
-
-func sshTest(ip string) error {
-	const timeout = 3 * time.Second
-	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+func (w VMWatcher) sshTest(ip string) error {
+	ctx, cancel := context.WithTimeout(context.TODO(), w.SSHTimeout)
 	defer cancel()
-	log.Printf("test ssh %s@%s", defaultUser, ip)
-	_, _, err := ssh.RunWith(ctx, defaultUser, ip, `pwd`)
+	log.Printf("test ssh %s@%s with timeout %s", w.User, ip, w.SSHTimeout)
+	_, _, err := ssh.RunWith(ctx, w.User, ip, `pwd`)
 	return err
 }

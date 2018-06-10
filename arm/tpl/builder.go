@@ -70,7 +70,7 @@ func (b *Builder) header(apiVersion string) Header {
 // AddVN adds a Virtual Network to the template builder.
 func (b *Builder) AddVN() VirtualNetworkResource {
 	r := VirtualNetworkResource{
-		newVN("default"),
+		newVN("default-vnet"),
 	}
 	b.add(b.header(APIVersions.VirtualNetwork), r)
 	return r
@@ -83,7 +83,7 @@ func (b *Builder) AddNSG(rules ...network.SecurityRule) NetworkSecurityGroupReso
 		p = &rules
 	}
 	r := NetworkSecurityGroupResource{
-		newNSG("default", p),
+		newNSG("default-nsg", p),
 	}
 	b.add(b.header(APIVersions.NetworkSecurityGroup), r)
 	return r
