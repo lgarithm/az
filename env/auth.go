@@ -47,7 +47,6 @@ func loadAzureProfile() *azureProfile {
 	filename := path.Join(os.Getenv("HOME"), ".azure", "azureProfile.json")
 	var profile azureProfile
 	loadJSON(filename, &profile)
-	pprint(&profile)
 	return &profile
 }
 
@@ -66,10 +65,4 @@ func removeBOM(bs []byte) []byte {
 	return bs // FIXME
 	// s := string(bs)
 	// return []byte(s)
-}
-
-func pprint(i interface{}) {
-	e := json.NewEncoder(os.Stdout)
-	e.SetIndent("", "    ")
-	e.Encode(i)
 }

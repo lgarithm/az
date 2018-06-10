@@ -18,7 +18,7 @@ const (
 	defaultAdminPassword = "Test1234"
 
 	// defaultVMSize = compute.StandardA1
-	defaultVMSize = compute.StandardDS1V2
+	defaultVMSize = compute.VirtualMachineSizeTypesStandardDS1V2
 )
 
 type VMOptions struct {
@@ -152,10 +152,10 @@ func newStorageProfileFromImage(name string, image *compute.ImageReference) *com
 		ImageReference: image,
 		OsDisk: &compute.OSDisk{
 			Name: to.StringPtr(name),
-			ManagedDisk: &compute.ManagedDiskParameters{
-				StorageAccountType: compute.StandardLRS,
-			},
-			CreateOption: compute.FromImage,
+			// ManagedDisk: &compute.ManagedDiskParameters{
+			// 	StorageAccountType: compute.StandardLRS,
+			// },
+			// CreateOption: compute.FromImage,
 		},
 		DataDisks: &[]compute.DataDisk{},
 	}

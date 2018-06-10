@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
@@ -7,7 +7,7 @@ import (
 
 const vmName = "master"
 
-func gen(cloudInitScript string) *tpl.Builder {
+func New(cloudInitScript string) *tpl.Builder {
 	b := tpl.NewBuilder()
 	rules := []network.SecurityRule{
 		tpl.NewAllowInboundRule("allow-ssh", "22", 1000),

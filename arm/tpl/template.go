@@ -1,6 +1,6 @@
 package tpl
 
-import "github.com/Azure/azure-sdk-for-go/services/resources"
+import "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 
 // DeploymentTemplate can be used by
 // az group deployment create --template-file template.json -g $group
