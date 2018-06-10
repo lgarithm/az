@@ -13,3 +13,21 @@
 [submodule "vendor/github.com/satori/uuid"]
 	path = vendor/github.com/satori/uuid
 	url = https://github.com/satori/uuid.git
+[submodule "vendor/github.com/lgarithm/go"]
+	path = vendor/github.com/lgarithm/go
+	url = https://github.com/lgarithm/go.git
+[submodule "vendor/github.com/pkg/errors"]
+	path = vendor/github.com/pkg/errors
+	url = https://github.com/pkg/errors.git
+[submodule "vendor/golang.org/x/sync"]
+	path = vendor/golang.org/x/sync
+	url = https://github.com/golang/sync.git
+[submodule "vendor/golang.org/x/net"]
+	path = vendor/golang.org/x/net
+	url = https://github.com/golang/net.git
+[submodule "vendor/golang.org/x/crypto"]
+	path = vendor/golang.org/x/crypto
+	url = https://github.com/golang/crypto.git
+[submodule "vendor/gopkg.in/yaml.v2"]
+	path = vendor/gopkg.in/yaml.v2
+	url = https://github.com/go-yaml/yaml.git

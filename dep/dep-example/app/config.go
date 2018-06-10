@@ -1,13 +1,13 @@
 package app
 
 import (
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
-	"github.com/lgarithm/az/arm/tpl"
+	"github.com/Azure/azure-sdk-for-go/arm/network"
+	"teavana.com/cloud/azure/arm/tpl"
 )
 
 const vmName = "master"
 
-func New(cloudInitScript string) *tpl.Builder {
+func gen(cloudInitScript string) *tpl.Builder {
 	b := tpl.NewBuilder()
 	rules := []network.SecurityRule{
 		tpl.NewAllowInboundRule("allow-ssh", "22", 1000),
@@ -20,9 +20,6 @@ func New(cloudInitScript string) *tpl.Builder {
 	opts.CloudInitScript = cloudInitScript
 	vm := b.AddVM(vmName, ni, &opts)
 	// b.AddVMExt("provision", vm)
-	// b.AddDockerVMExt("docker", vm)
-	use(vm)
+	b.AddDockerVMExt("docker", vm)
 	return b
 }
-
-func use(i interface{}) {}
