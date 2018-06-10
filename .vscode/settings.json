@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        "**/.DS_Store": true,
+        "**/.git": true,
+        "**/.hg": true,
+        "**/.svn": true,
+        "**/CVS": true,
+        ".gopath": true,
+        ".vscode": true,
+        "vendor": true
+    }
+}
