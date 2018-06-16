@@ -45,6 +45,7 @@ func New(cloudInitScript string) *tpl.Builder {
 	// worker VMs
 	{
 		opts := tpl.DefaultVMOptions()
+		opts.AllowPassword = true
 		opts.CloudInitScript = cloudInitScript
 		nsg := b.AddNSG("internal-nsg")
 		for i := 0; i < numWorkers; i++ {

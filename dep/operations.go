@@ -33,7 +33,7 @@ func (d Deployment) Up() error {
 	defer cancel()
 	var g errgroup.Group
 	g.Go(func() error {
-		return watcher.NewGroupWatcher(d.Group).WaitSSH(ctx, d.VMNames())
+		return watcher.NewGroupWatcher(d.Group).WaitSSH(ctx, d.RelayVMNames())
 	})
 	t, err := profile.Duration(func() error { _, err := d.Deploy(); return err })
 	if err != nil {
@@ -50,7 +50,7 @@ func (d Deployment) UpAndInit() error {
 	defer cancel()
 	var g errgroup.Group
 	g.Go(func() error {
-		return watcher.NewGroupWatcher(d.Group).WaitCloudInit(ctx, d.VMNames())
+		return watcher.NewGroupWatcher(d.Group).WaitCloudInit(ctx, d.RelayVMNames())
 	})
 	t, err := profile.Duration(func() error { _, err := d.Deploy(); return err })
 	if err != nil {
