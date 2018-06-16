@@ -55,7 +55,7 @@ func newVM(name string, ni NetworkInterfaceResource, o *VMOptions) compute.Virtu
 	if o != nil {
 		opts = *o
 	}
-	osDiskName := fmt.Sprintf("%s-%d", name, time.Now().Unix())
+	osDiskName := fmt.Sprintf("%s-disk-%d", name, time.Now().Unix())
 	return compute.VirtualMachine{
 		Type:     to.StringPtr(TypeVM),
 		Name:     to.StringPtr(name),
@@ -70,7 +70,7 @@ func newVM(name string, ni NetworkInterfaceResource, o *VMOptions) compute.Virtu
 }
 
 func newWindowsVM(name string, ni NetworkInterfaceResource) compute.VirtualMachine {
-	osDiskName := fmt.Sprintf("%s-%d", name, time.Now().Unix())
+	osDiskName := fmt.Sprintf("%s-disk-%d", name, time.Now().Unix())
 	return compute.VirtualMachine{
 		Type:     to.StringPtr(TypeVM),
 		Name:     to.StringPtr(name),
@@ -152,9 +152,9 @@ func newStorageProfileFromImage(name string, image *compute.ImageReference) *com
 		ImageReference: image,
 		OsDisk: &compute.OSDisk{
 			Name: to.StringPtr(name),
-			// ManagedDisk: &compute.ManagedDiskParameters{
-			// 	StorageAccountType: compute.StandardLRS,
-			// },
+			ManagedDisk: &compute.ManagedDiskParameters{
+				StorageAccountType: compute.StorageAccountTypesStandardLRS,
+			},
 			CreateOption: compute.DiskCreateOptionTypesFromImage,
 		},
 		DataDisks: &[]compute.DataDisk{},

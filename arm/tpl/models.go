@@ -46,6 +46,7 @@ type GenericResource struct {
 }
 
 func (g *GenericResource) RefExpr() string {
+	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates
 	return fmt.Sprintf("[resourceId('%s', '%s')]", g.Type, g.Name)
 }
 
