@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/golang/glog"
 )
@@ -62,7 +63,7 @@ func loadJSON(filename string, i interface{}) {
 }
 
 func removeBOM(bs []byte) []byte {
-	return bs // FIXME
-	// s := string(bs)
-	// return []byte(s)
+	bom := []byte{0xef, 0xbb, 0xbf}
+	str := strings.TrimPrefix(string(bs), string(bom))
+	return []byte(str)
 }
