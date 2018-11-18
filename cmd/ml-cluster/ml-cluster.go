@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	group    = flag.String("group", "test-01", "azure resource group")
-	location = flag.String("location", "eastus", "azure location")
+	group    = flag.String("group", "test-ml-cluster", "azure resource group")
+	location = flag.String("location", "southeastasia", "azure location")
 	action   = flag.String("action", "up", "up | down | reload")
 )
 

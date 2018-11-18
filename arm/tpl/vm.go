@@ -14,22 +14,26 @@ import (
 )
 
 const (
-	defaultAdminUser     = "cup"
-	defaultAdminPassword = "Test1234"
-
 	// defaultVMSize = compute.StandardA1
-	defaultVMSize = compute.VirtualMachineSizeTypesStandardDS1V2
+	defaultVMSize = compute.StandardDS1V2
 )
 
-type VMOptions struct {
+type vmOptions struct {
 	AddLocalSSHKey  bool
+	AllowPassword   bool
+	AdminUser       string
+	AdminPassword   string
 	CloudInitScript string
 }
 
 // DefaultVMOptions creates a VMOptions with recommended values
-func DefaultVMOptions() VMOptions {
-	return VMOptions{
+func DefaultVMOptions() vmOptions {
+	const defaultAdminUser = "cup"
+	const defaultAdminPassword = "Test1234"
+	return vmOptions{
 		AddLocalSSHKey:  true,
+		AdminUser:       defaultAdminUser,
+		AdminPassword:   defaultAdminPassword,
 		CloudInitScript: "",
 	}
 }
@@ -50,12 +54,12 @@ var (
 	}
 )
 
-func newVM(name string, ni NetworkInterfaceResource, o *VMOptions) compute.VirtualMachine {
+func newVM(name string, ni NetworkInterfaceResource, o *vmOptions) compute.VirtualMachine {
 	opts := DefaultVMOptions()
 	if o != nil {
 		opts = *o
 	}
-	osDiskName := fmt.Sprintf("%s-%d", name, time.Now().Unix())
+	osDiskName := fmt.Sprintf("%s-disk-%d", name, time.Now().Unix())
 	return compute.VirtualMachine{
 		Type:     to.StringPtr(TypeVM),
 		Name:     to.StringPtr(name),
@@ -69,14 +73,18 @@ func newVM(name string, ni NetworkInterfaceResource, o *VMOptions) compute.Virtu
 	}
 }
 
-func newWindowsVM(name string, ni NetworkInterfaceResource) compute.VirtualMachine {
-	osDiskName := fmt.Sprintf("%s-%d", name, time.Now().Unix())
+func newWindowsVM(name string, ni NetworkInterfaceResource, o *vmOptions) compute.VirtualMachine {
+	opts := DefaultVMOptions()
+	if o != nil {
+		opts = *o
+	}
+	osDiskName := fmt.Sprintf("%s-disk-%d", name, time.Now().Unix())
 	return compute.VirtualMachine{
 		Type:     to.StringPtr(TypeVM),
 		Name:     to.StringPtr(name),
 		Location: to.StringPtr("[resourceGroup().location]"),
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
-			OsProfile:       newWindowsOsProfile(name),
+			OsProfile:       newWindowsOsProfile(name, opts),
 			HardwareProfile: &compute.HardwareProfile{VMSize: defaultVMSize},
 			NetworkProfile:  newNetworkProfile(ni),
 			StorageProfile:  newStorageProfileFromImage(osDiskName, defaultWindowsImage),
@@ -84,23 +92,24 @@ func newWindowsVM(name string, ni NetworkInterfaceResource) compute.VirtualMachi
 	}
 }
 
-var defaultMyKey = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
-
-func newLinuxOsProfile(name string, opts VMOptions) *compute.OSProfile {
+func newLinuxOsProfile(name string, opts vmOptions) *compute.OSProfile {
+	var defaultMyKey = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
 	var linuxConfiguration *compute.LinuxConfiguration
 	if opts.AddLocalSSHKey {
 		if bs, err := ioutil.ReadFile(defaultMyKey); err == nil {
 			key := compute.SSHPublicKey{
-				Path:    to.StringPtr(fmt.Sprintf("/home/%s/.ssh/authorized_keys", defaultAdminUser)),
+				Path:    to.StringPtr(fmt.Sprintf("/home/%s/.ssh/authorized_keys", opts.AdminUser)),
 				KeyData: to.StringPtr(string(bs)),
 			}
 			linuxConfiguration = &compute.LinuxConfiguration{
-				// DisablePasswordAuthentication: to.BoolPtr(false),
 				SSH: &compute.SSHConfiguration{PublicKeys: &[]compute.SSHPublicKey{key}},
 			}
 		} else {
 			glog.Warningf("failed to add local ssh key: %v", err)
 		}
+	}
+	if opts.AllowPassword {
+		linuxConfiguration.DisablePasswordAuthentication = to.BoolPtr(false)
 	}
 	var customData *string
 	if opts.CloudInitScript != "" {
@@ -109,13 +118,13 @@ func newLinuxOsProfile(name string, opts VMOptions) *compute.OSProfile {
 	return &compute.OSProfile{
 		CustomData:         customData,
 		ComputerName:       to.StringPtr(name),
-		AdminUsername:      to.StringPtr(defaultAdminUser),
-		AdminPassword:      to.StringPtr(defaultAdminPassword),
+		AdminUsername:      to.StringPtr(opts.AdminUser),
+		AdminPassword:      to.StringPtr(opts.AdminPassword),
 		LinuxConfiguration: linuxConfiguration,
 	}
 }
 
-func newWindowsOsProfile(name string) *compute.OSProfile {
+func newWindowsOsProfile(name string, opts vmOptions) *compute.OSProfile {
 	windowsConfiguration := &compute.WindowsConfiguration{
 		WinRM: &compute.WinRMConfiguration{
 			Listeners: &[]compute.WinRMListener{
@@ -131,8 +140,8 @@ func newWindowsOsProfile(name string) *compute.OSProfile {
 	}
 	return &compute.OSProfile{
 		ComputerName:         to.StringPtr(name),
-		AdminUsername:        to.StringPtr(defaultAdminUser),
-		AdminPassword:        to.StringPtr(defaultAdminPassword),
+		AdminUsername:        to.StringPtr(opts.AdminUser),
+		AdminPassword:        to.StringPtr(opts.AdminPassword),
 		WindowsConfiguration: windowsConfiguration,
 	}
 }
@@ -152,9 +161,9 @@ func newStorageProfileFromImage(name string, image *compute.ImageReference) *com
 		ImageReference: image,
 		OsDisk: &compute.OSDisk{
 			Name: to.StringPtr(name),
-			// ManagedDisk: &compute.ManagedDiskParameters{
-			// 	StorageAccountType: compute.StandardLRS,
-			// },
+			ManagedDisk: &compute.ManagedDiskParameters{
+				StorageAccountType: compute.StorageAccountTypesStandardLRS,
+			},
 			CreateOption: compute.DiskCreateOptionTypesFromImage,
 		},
 		DataDisks: &[]compute.DataDisk{},

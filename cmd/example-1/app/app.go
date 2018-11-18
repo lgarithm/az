@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/lgarithm/az/arm/tpl"
 )
 
@@ -12,8 +12,8 @@ func New(cloudInitScript string) *tpl.Builder {
 	rules := []network.SecurityRule{
 		tpl.NewAllowInboundRule("allow-ssh", "22", 1000),
 	}
-	nsg := b.AddNSG(rules...)
-	vn := b.AddVN()
+	nsg := b.AddNSG("default-nsg", rules...)
+	vn := b.AddVN("default-vnet")
 	ip := b.AddIP(vmName)
 	ni := b.AddNI(vmName, vn, &nsg, &ip)
 	opts := tpl.DefaultVMOptions()

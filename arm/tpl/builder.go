@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 )
 
 type Item struct {
@@ -68,22 +68,22 @@ func (b *Builder) header(apiVersion string) Header {
 }
 
 // AddVN adds a Virtual Network to the template builder.
-func (b *Builder) AddVN() VirtualNetworkResource {
+func (b *Builder) AddVN(name string) VirtualNetworkResource {
 	r := VirtualNetworkResource{
-		newVN("default-vnet"),
+		newVN(name),
 	}
 	b.add(b.header(APIVersions.VirtualNetwork), r)
 	return r
 }
 
 // AddNSG adds a Network Security Group to the template builder.
-func (b *Builder) AddNSG(rules ...network.SecurityRule) NetworkSecurityGroupResource {
+func (b *Builder) AddNSG(name string, rules ...network.SecurityRule) NetworkSecurityGroupResource {
 	var p *[]network.SecurityRule
 	if len(rules) > 0 {
 		p = &rules
 	}
 	r := NetworkSecurityGroupResource{
-		newNSG("default-nsg", p),
+		newNSG(name, p),
 	}
 	b.add(b.header(APIVersions.NetworkSecurityGroup), r)
 	return r
@@ -119,7 +119,7 @@ func (b *Builder) AddNI(name string, vn VirtualNetworkResource, nsg *NetworkSecu
 }
 
 // AddVM adds a Virtual Machine to the template builder.
-func (b *Builder) AddVM(name string, ni NetworkInterfaceResource, opts *VMOptions) VirtualMachineResource {
+func (b *Builder) AddVM(name string, ni NetworkInterfaceResource, opts *vmOptions) VirtualMachineResource {
 	h := b.header(APIVersions.Default)
 	h.addDep(fmt.Sprintf("[resourceId('%s', '%s')]", *ni.Type, *ni.Name))
 	r := VirtualMachineResource{
@@ -153,11 +153,11 @@ func (b *Builder) AddDockerVMExt(name string, vm VirtualMachineResource) Virtual
 }
 
 // AddWindowsVM adds a Virtual Machine with windows image to the template builder.
-func (b *Builder) AddWindowsVM(name string, ni NetworkInterfaceResource) VirtualMachineResource {
+func (b *Builder) AddWindowsVM(name string, ni NetworkInterfaceResource, opts *vmOptions) VirtualMachineResource {
 	h := b.header(APIVersions.Default)
 	h.addDep(fmt.Sprintf("[resourceId('%s', '%s')]", *ni.Type, *ni.Name))
 	r := VirtualMachineResource{
-		newWindowsVM(name, ni),
+		newWindowsVM(name, ni, opts),
 	}
 	b.add(h, r)
 	return r

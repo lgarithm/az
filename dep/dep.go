@@ -70,26 +70,11 @@ func (d Deployment) Show() error {
 	return nil
 }
 
-func (d Deployment) resources() []tpl.GenericResource {
-	bs, err := json.Marshal((d.template)["resources"])
-	if err != nil {
-		return nil
-	}
-	var result []tpl.GenericResource
-	if err := json.Unmarshal(bs, &result); err != nil {
-		return nil
-	}
-	return result
-}
-
-// VMNames returns the list of VM names in the Deployment
-func (d Deployment) VMNames() []string {
-	gres := d.resources()
+// RelayVMNames returns the list of VM names that has public IP addresses in the Deployment
+func (d Deployment) RelayVMNames() []string {
 	var names []string
-	for _, r := range gres {
-		if r.Type == tpl.TypeVM {
-			names = append(names, r.Name)
-		}
+	for name := range d.vmNameToIPName {
+		names = append(names, name)
 	}
 	return names
 }

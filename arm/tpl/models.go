@@ -5,7 +5,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	disk "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-02-01/storage"
 )
@@ -46,6 +46,7 @@ type GenericResource struct {
 }
 
 func (g *GenericResource) RefExpr() string {
+	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates
 	return fmt.Sprintf("[resourceId('%s', '%s')]", g.Type, g.Name)
 }
 
