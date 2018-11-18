@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/lgarithm/az/arm/tpl"
 )
 
 const (
 	numWorkers = 3
-	vmSize     = compute.VirtualMachineSizeTypesStandardNV6
+	vmSize     = compute.StandardNV6
 
 	imageGroup = `teavana-image`
 	imageName  = `gpu-mpi-3-1`
