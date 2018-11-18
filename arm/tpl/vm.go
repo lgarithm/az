@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	 defaultVMSize = compute.StandardA1
-	//defaultVMSize = compute.VirtualMachineSizeTypesStandardDS1V2
+	// defaultVMSize = compute.StandardA1
+	defaultVMSize = compute.StandardDS1V2
 )
 
 type vmOptions struct {
