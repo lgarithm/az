@@ -1,24 +1,32 @@
 package azcli
 
+type StorageSKU string
+
+const Premium_LRS StorageSKU = `Premium_LRS`
+
 type VMSS struct {
-	Name string
-	VM   VM
+	Name    string
+	VM      VM
+	Storage StorageSKU
 }
 
-func createVMSS(name string, admin string, location, group string, size, image string, n int, vn *VNet) Proc {
+func (v VMSS) CreateAt(p Place, n int, vn *VNet) Proc {
 	args := []string{`vmss`, `create`,
-		`-l`, location,
-		`-g`, group,
+		`-l`, p.Location,
+		`-g`, p.Group,
 		`--disable-overprovision`,
 		`--instance-count`, str(n),
-		`--vm-sku`, size,
-		`--image`, image,
-		`--admin-username`, admin,
+		`--vm-sku`, string(v.VM.Size),
+		`--image`, string(v.VM.Image),
+		`--admin-username`, p.Admin,
 		// `--nsg`, relay+`NSG`,
 		`--lb`, ``,
-		`-n`, name,
+		`-n`, v.Name,
 		`--debug`,
 		`-o`, `table`,
+	}
+	if len(v.Storage) > 0 {
+		args = append(args, `--storage-sku`, string(v.Storage))
 	}
 	if vn != nil {
 		args = append(args,
@@ -27,6 +35,22 @@ func createVMSS(name string, admin string, location, group string, size, image s
 		)
 	}
 	return AZ(args...)
+}
+
+func createVMSS(name string, admin string, location, group string, size, image string, n int, vn *VNet) Proc {
+	v := VMSS{
+		Name: name,
+		VM: VM{
+			Image: Image(image),
+			Size:  Size(size),
+		},
+	}
+	p := Place{
+		Admin:    admin,
+		Location: location,
+		Group:    group,
+	}
+	return v.CreateAt(p, n, vn)
 }
 
 func DeleteVMSS(name string, group string) Proc {

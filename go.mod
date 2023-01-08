@@ -2,9 +2,9 @@ module github.com/lgarithm/az
 
 go 1.19
 
-require github.com/lgarithm/proc v0.4.0
+require github.com/lgarithm/proc v0.4.2
 
 require (
-	golang.org/x/crypto v0.4.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/crypto v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
 )
